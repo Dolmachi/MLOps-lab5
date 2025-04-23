@@ -11,16 +11,6 @@ class Logger:
     """
         Class for logging behaviour of data exporting - object of ExportingTool class
     """
-
-    def __init__(self, show: bool) -> None:
-        """
-            Re-defined __init__ method which sets show parametr
-
-        Args:
-            show (bool): if set all logs will be shown in terminal
-        """
-        self.show = show
-
     def get_console_handler(self) -> logging.StreamHandler:
         """
             Class method the aim of which is getting a console handler to show logs on terminal
@@ -55,8 +45,7 @@ class Logger:
         """
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.DEBUG)
-        if self.show:
-            logger.addHandler(self.get_console_handler())
+        logger.addHandler(self.get_console_handler())
         logger.addHandler(self.get_file_handler())
         logger.propagate = False
         return logger
