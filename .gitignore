@@ -1,2 +1,5 @@
 products.csv
 processed_products.csv
+
+**/__pycache__/
+logfile.log
