@@ -32,7 +32,7 @@ class DataMaker:
             .getOrCreate()
         
     def prepare_data(self):
-        """Фильтрует и обрабатывает основные данные """
+        """Фильтрует и обрабатывает основные данные"""
         
         # Считываем данные
         df = self.spark.read.option("header", True) \
@@ -78,6 +78,7 @@ class DataMaker:
                 shutil.move(os.path.join(temp_output_path, file), OUTPUT_PATH)
                 break
         shutil.rmtree(temp_output_path)
+        self.logger.info("Данные успешно обработаны и сохранены!")
 
 
 if __name__ == "__main__":
