@@ -10,9 +10,9 @@ from pyspark.sql.functions import col, expr, when
 
 
 root_dir = Path(__file__).parent.parent
-CONFIG_PATH = str(Path(root_dir, 'config.ini'))
-DATA_PATH = str(Path(root_dir, 'data', 'products.csv'))
-OUTPUT_PATH = str(Path(root_dir, 'data', 'processed_products.csv'))
+CONFIG_PATH = str(root_dir / 'config.ini')
+DATA_PATH = str(root_dir / 'data' / 'products.csv')
+OUTPUT_PATH = str(root_dir / 'data' / 'processed_products.csv')
 
 
 class DataMaker:
@@ -79,9 +79,13 @@ class DataMaker:
                 break
         shutil.rmtree(temp_output_path)
         self.logger.info("Данные успешно обработаны и сохранены!")
+        
+    def stop(self):
+        self.spark.stop()
+        self.logger.info("SparkSession остановлен")
 
 
 if __name__ == "__main__":
     data_maker = DataMaker()
     data_maker.prepare_data()
-    data_maker.spark.stop()
+    data_maker.stop()

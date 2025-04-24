@@ -9,9 +9,9 @@ from pyspark.ml.feature import VectorAssembler, StandardScaler
 
 
 root_dir = Path(__file__).parent.parent
-CONFIG_PATH = str(Path(root_dir, 'config.ini'))
-DATA_PATH = str(Path(root_dir, 'data', 'processed_products.csv'))
-MODEL_PATH = str(Path(root_dir, 'model'))
+CONFIG_PATH = str(root_dir / 'config.ini')
+DATA_PATH   = str(root_dir / 'data' / 'processed_products.csv')
+MODEL_PATH  = str(root_dir / 'model')
 
 
 class Trainer:
@@ -66,8 +66,12 @@ class Trainer:
         pipeline_model.write().overwrite().save(MODEL_PATH)
         self.logger.info(f"Модель успешно сохранена!")
         
+    def stop(self):
+        self.spark.stop()
+        self.logger.info("SparkSession остановлен")
+        
         
 if __name__ == "__main__":
     trainer = Trainer()
     trainer.train_pipeline(k=5)
-    trainer.spark.stop()
+    trainer.stop()
