@@ -2,6 +2,7 @@ import configparser
 from pathlib import Path
 from logger import Logger
 from pyspark import SparkConf
+from pyspark.ml import Pipeline
 from pyspark.sql import SparkSession
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.feature import VectorAssembler, StandardScaler
@@ -29,8 +30,8 @@ class Trainer:
             .config(conf=spark_conf) \
             .getOrCreate()
         
-    def train_model(self, k=5):
-        """Обучает алгоритм кластеризации kmeans"""
+    def train_pipeline(self, k=5):
+        """Обучает алгоритм кластеризации kmeans в виде пайплайна"""
         
         # Считываем данные
         df = self.spark.read.option("header", True) \
@@ -38,26 +39,35 @@ class Trainer:
                .option("inferSchema", True) \
                .csv(DATA_PATH)
                
-        # Преобразование данных в вектор
-        assembler = VectorAssembler(inputCols=df.columns, outputCol="features")
-        assembled_df = assembler.transform(df)
+        # Составляем этапы Pipeline
+        assembler = VectorAssembler(
+            inputCols=df.columns,
+            outputCol="features"
+        )
+        scaler = StandardScaler(
+            inputCol="features",
+            outputCol="scaled_features",
+            withMean=True,
+            withStd=True
+        )
+        kmeans = KMeans(
+            k=k,
+            seed=42,
+            featuresCol="scaled_features",
+            predictionCol="cluster"
+        )
         
-        # Нормализация
-        scaler = StandardScaler(inputCol="features", outputCol="scaled_features", withMean=True, withStd=True)
-        scaler_model = scaler.fit(assembled_df)
-        scaled_df = scaler_model.transform(assembled_df)
+        pipeline = Pipeline(stages=[assembler, scaler, kmeans])
         
-        # Обучаем модель
-        # Эксперименты в ноутбуке показали, что оптимальное k=5
-        kmeans = KMeans(k=k, seed=42, featuresCol="scaled_features")
-        model = kmeans.fit(scaled_df)
+        # Обучаем PipelineModel
+        pipeline_model = pipeline.fit(df)
         
-        # Сохраняем модель
-        model.write().overwrite().save(MODEL_PATH)
-        self.logger.info("Модель успешно сохранена!")
-
-
+        # Сохраняем весь PipelineModel
+        pipeline_model.write().overwrite().save(MODEL_PATH)
+        self.logger.info(f"Модель успешно сохранена!")
+        
+        
 if __name__ == "__main__":
     trainer = Trainer()
-    trainer.train_model(k=5)
+    trainer.train_pipeline(k=5)
     trainer.spark.stop()
