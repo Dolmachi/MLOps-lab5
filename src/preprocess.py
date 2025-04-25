@@ -21,12 +21,13 @@ class DataMaker:
         
         # Конфигурация Spark
         config = configparser.ConfigParser()
+        config.optionxform = str
         config.read(CONFIG_PATH)
         spark_conf = SparkConf().setAll(config['SPARK'].items())
         
         # Создаем сессию
         self.spark = SparkSession.builder \
-            .appName("WordCountWithDataFrame") \
+            .appName("KMeans") \
             .master("local[*]") \
             .config(conf=spark_conf) \
             .getOrCreate()

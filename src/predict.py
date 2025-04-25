@@ -19,12 +19,13 @@ class Predictor:
         
         # Конфигурация Spark
         config = configparser.ConfigParser()
+        config.optionxform = str
         config.read(CONFIG_PATH)
         spark_conf = SparkConf().setAll(config['SPARK'].items())
         
         # Создаем сессию
         self.spark = SparkSession.builder \
-            .appName("WordCountWithDataFrame") \
+            .appName("KMeans") \
             .master("local[*]") \
             .config(conf=spark_conf) \
             .getOrCreate()
@@ -56,5 +57,4 @@ if __name__ == "__main__":
     # Делаем предсказание
     labels = pred.predict(df_new).select('cluster')
     labels.show(10, truncate=False)
-    
     pred.stop()
